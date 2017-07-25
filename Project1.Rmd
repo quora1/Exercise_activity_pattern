@@ -1,0 +1,84 @@
+---
+title: "Untitled"
+author: "Wiktoria Urantowka"
+date: "7/24/2017"
+output: html_document
+---
+#Reporoducuble Research#
+##Project 1##
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1. Code for reading in the dataset & loading packages
+```{r}
+rm(list=ls())
+setwd("/Users/quora1/Desktop/DataScience/5_Reproducible_Research/workDir")
+library("zoo")
+library("ggplot2")
+data<-read.csv("./activity.csv",stringsAsFactors=FALSE) 
+head(data)
+```
+
+2. Histogram of the total number of steps taken each day
+
+```{r, echo=TRUE}
+sumday<- aggregate(data$steps, list(date = data$date), sum)
+hist(sumday[,2], main = "sum of steps per day")
+```
+
+3. Mean and median number of steps taken each day
+```{r, echo=TRUE}
+mean <-mean(sumday[,2],na.rm=TRUE)
+median <-median(sumday[,2],na.rm=TRUE)
+mean
+median
+```
+
+4. Time series plot of the average number of steps taken
+```{r, echo=TRUE}
+with(data,plot(interval, steps, type="l", main='steps per 5 minut interval'))
+```
+
+5. The 5-minute interval that, on average, contains the maximum number of steps
+```{r, echo=TRUE}
+sum_interval<- aggregate(data$steps, list(interval = data$interval), sum,na.rm=TRUE)
+max_step_interval<-sum_interval$interval[which.max(sum_interval$x)]
+max_step_interval
+```
+
+6. Code to describe and show a strategy for imputing missing data
+ 
+ Replacing NA by interval mean
+```{r, echo=TRUE}
+new<-na.aggregate(data$steps, by = data$interval)
+data[,1] <- new
+head(data)
+```
+
+7. Histogram of the total number of steps taken each day after missing values are imputed
+```{r, echo=TRUE}
+new.sumday<- aggregate(data$steps, list(date = data$date), sum)
+hist(new.sumday[,2])
+```
+ Please note, after replacing NA by mean values, mean and median are equal.
+```{r, echo=TRUE}
+mean <-mean(new.sumday[,2])
+median <-median(new.sumday[,2])
+mean
+median
+```
+
+8 Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends (and the steps required for it's computation)
+```{r, echo=TRUE}
+weekday<-as.POSIXlt(data$date)$wday
+data[,4]<-as.numeric(weekday)
+data$weektime<- ifelse(data$V4 >= 6, "weekend", "weekday")
+data$weektime<-as.factor(data$weektime)
+qplot(interval,steps,data=data,geom="line",facets=weektime~., ylab= "Number of steps",type = "𝚕")
+```
+
+Note, There is more variation in the average number of steps taken during the weekend than during the week days.
+
+
